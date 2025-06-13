@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:provider/provider.dart'; // ✅ Tambahkan ini
+import 'package:provider/provider.dart'; 
 import 'package:tb_kelompok1_b/routes/app_route.dart';
-import 'package:tb_kelompok1_b/controller/news_controller.dart'; // ✅ Import controller
+import 'package:tb_kelompok1_b/controller/news_controller.dart'; 
 
 void main() {
   runApp(const MyApp());
