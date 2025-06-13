@@ -1,47 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'screens/home_screen.dart';
-import 'utils/helper.dart';
-import 'widgets/bottom_nav_bar.dart';
+import 'package:provider/provider.dart'; // ✅ Tambahkan ini
+import 'package:tb_kelompok1_b/routes/app_route.dart';
+import 'package:tb_kelompok1_b/controller/news_controller.dart'; // ✅ Import controller
 
 void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  int _currentIndex = 0;
-
-  final List<Widget> _pages = const [HomeScreen()];
-
-  void _onTap(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
     return ScreenUtilInit(
-      designSize: const Size(375, 812), // iPhone X layout as base
+      designSize: const Size(360, 800),
       minTextAdapt: true,
       splitScreenMode: true,
-      builder: (context, child) {
-        return MaterialApp(
-          title: 'News App',
-          home: Scaffold(
-            backgroundColor: AppColors.frostWhite,
-            body: _pages[_currentIndex],
-            bottomNavigationBar: BottomNavBar(
-              currentIndex: _currentIndex,
-              onTap: _onTap,
+      builder: (_, child) {
+        return MultiProvider(
+          providers: [ChangeNotifierProvider(create: (_) => NewsController())],
+          child: MaterialApp.router(
+            debugShowCheckedModeBanner: false,
+            title: 'Frost News',
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+              useMaterial3: true,
             ),
+            routerConfig: AppRouter().goRouter,
           ),
         );
       },

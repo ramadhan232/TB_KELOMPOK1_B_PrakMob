@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/helper.dart';
+import 'package:flutter/cupertino.dart';
 
 class BottomNavBar extends StatefulWidget {
   final int currentIndex;
@@ -34,15 +35,28 @@ class _BottomNavBarState extends State<BottomNavBar> {
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
+      backgroundColor: AppColors.frozenTeal,
       currentIndex: _selectedIndex,
       onTap: _onItemTapped,
-      selectedItemColor: AppColors.frozenTeal,
-      unselectedItemColor: AppColors.glacierGray,
+      type: BottomNavigationBarType.fixed,
+      selectedItemColor: AppColors.frostWhite,
+      unselectedItemColor: Colors.black,
+      showSelectedLabels: true,
+      showUnselectedLabels: true,
       items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Explore'),
-        BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: 'Saved'),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        BottomNavigationBarItem(icon: Icon(CupertinoIcons.home), label: 'Home'),
+        BottomNavigationBarItem(
+          icon: Icon(CupertinoIcons.search),
+          label: 'Search',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(CupertinoIcons.star),
+          label: 'Favorite',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(CupertinoIcons.person_circle),
+          label: 'Profile',
+        ),
       ],
     );
   }
