@@ -17,12 +17,8 @@ samples, guidance on mobile development, and a full API reference.
 
 # TB_KELOMPOK1_B_PrakMob
 
-## 1. Muhammad Ramadhan (2206065)
-
-## 2. Fauzi Aziz Muzakki (2206039)
-
-## 3. Nur Hapianti (2206056)
-
-## 4. Muhammad Renaldy Taufiq Ramadhan (2206045)
-
-## 5. Aa Saeful Basith (2206059)
+1. Muhammad Ramadhan (2206065)
+2. Fauzi Aziz Muzakki (2206039)
+3. Nur Hapianti (2206056)
+4. Muhammad Renaldy Taufiq Ramadhan (2206045)
+5. Aa Saeful Basith (2206059)
