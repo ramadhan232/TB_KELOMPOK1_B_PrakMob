@@ -1,45 +1,58 @@
 import 'dart:convert';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
-import '../constants/api_constants.dart';
-import '../model/news_everything.dart';
-import '../model/news_top_headline_country.dart';
-import '../model/news_top_headline_source.dart';
+import '../model/news_model.dart';
 
-class NewsController with ChangeNotifier {
-  NewsEverythingModel? _newsModel;
-  NewsTopHeadlineCountryModel? _topHeadlineCountryModel;
-  NewsTopHeadlineSourceModel? _sourceModel;
-  late bool _isLoading = false;
-  String? _errorMessage;
+class NewsController extends ChangeNotifier {
+  final String _url = 'http://45.149.187.204:3000/api/news';
+  List<NewsModel> _newsList = [];
+  final Set<int> _bookmarkedIds = {}; //
+  bool _loading = false;
+  String? _error;
 
-  NewsEverythingModel? get newsModel => _newsModel;
-  NewsTopHeadlineCountryModel? get topHeadlineCountryModel =>
-      _topHeadlineCountryModel;
-  NewsTopHeadlineSourceModel? get sourceModel => _sourceModel;
-  bool get isLoading => _isLoading;
-  String? get errorMessage => _errorMessage;
+  List<NewsModel> get newsList => _newsList;
+  bool get isLoading => _loading;
+  String? get error => _error;
 
-  Future<void> fetchEveryting({required String query}) async {
-    _isLoading = true;
+  bool isBookmarked(int id) => _bookmarkedIds.contains(id);
+
+  // ✅ Toggle status bookmark
+  void toggleBookmark(int id) {
+    if (_bookmarkedIds.contains(id)) {
+      _bookmarkedIds.remove(id);
+    } else {
+      _bookmarkedIds.add(id);
+    }
     notifyListeners();
+  }
+
+  Future<void> fetchNews() async {
+    _loading = true;
+    _error = null;
+    notifyListeners();
+
     try {
-      final uri = Uri.parse(
-        '${ApiConstants.baseUrl}${ApiConstants.everytingEndpoint}?q=$query&pageSize=${ApiConstants.defaultParams['pageSize']}',
-      );
-      final response = await http.get(uri, headers: ApiConstants.headers);
+      final response = await http.get(Uri.parse(_url));
+
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        _newsModel = NewsEverythingModel.fromJson(data);
-        _errorMessage = null;
+        final decoded = jsonDecode(response.body);
+        final body = decoded['body'];
+
+        if (body != null && body['data'] != null && body['data'] is List) {
+          final List<dynamic> newsData = body['data'];
+          _newsList = newsData.map((e) => NewsModel.fromJson(e)).toList();
+        } else {
+          _error = 'Data berita kosong atau tidak valid';
+          _newsList = [];
+        }
       } else {
-        _errorMessage = 'Failed to load news: ${response.statusCode}';
+        _error = 'Gagal mengambil data: ${response.statusCode}';
       }
     } catch (e) {
-      _errorMessage = 'Error fetching news: ${e.toString()}';
-    } finally {
-      _isLoading = false;
-      notifyListeners();
+      _error = 'Terjadi kesalahan: $e';
     }
+
+    _loading = false;
+    notifyListeners();
   }
 }

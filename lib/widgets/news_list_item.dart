@@ -1,133 +1,122 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../model/article_model.dart';
-import '../utils/helper.dart';
-import '../controller/news_controller.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../controller/bookmark_controller.dart';
+import '../model/news_model.dart';
+import '../widgets/news_detail_view.dart';
+import '../utils/helper.dart';
 
 class NewsListItem extends StatefulWidget {
-  const NewsListItem({super.key});
+  final NewsModel news;
+  final VoidCallback? onTap;
+
+  const NewsListItem({super.key, required this.news, this.onTap});
 
   @override
   State<NewsListItem> createState() => _NewsListItemState();
 }
 
-class _NewsListItemState extends State<NewsListItem>
-    with SingleTickerProviderStateMixin {
-  late TabController tabController;
+class _NewsListItemState extends State<NewsListItem> {
+  bool isBookmarked = false;
 
   @override
   void initState() {
     super.initState();
-    tabController = TabController(length: 3, vsync: this);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<NewsController>().fetchEveryting(query: 'technology');
-    });
+    _loadBookmarkState();
   }
 
   @override
-  void dispose() {
-    tabController.dispose();
-    super.dispose();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final controller = context.read<BookmarkController>();
+    isBookmarked = controller.isBookmarked(widget.news);
   }
 
-  bool isBookmarked = false;
-
-  void toggleBookmark() {
+  Future<void> _loadBookmarkState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getStringList('bookmarks') ?? [];
     setState(() {
-      isBookmarked = !isBookmarked;
+      isBookmarked = saved.contains(widget.news.id);
+    });
+  }
+
+  Future<void> toggleBookmark() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getStringList('bookmarks') ?? [];
+    if (saved.contains(widget.news.id)) {
+      saved.remove(widget.news.id);
+    } else {
+      saved.add(widget.news.id);
+    }
+    await prefs.setStringList('bookmarks', saved);
+    setState(() {
+      isBookmarked = saved.contains(widget.news.id);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final controller = context.watch<NewsController>();
-    final articles = controller.newsModel?.articles ?? [];
-
-    if (controller.isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (controller.errorMessage != null) {
-      return Center(child: Text(controller.errorMessage!));
-    }
-
-    if (articles.isEmpty) {
-      return const Center(child: Text('No articles found.'));
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: articles.length,
-      itemBuilder: (context, index) {
-        final article = articles[index];
-        return _buildNewsCard(article);
-      },
-    );
-  }
-
-  Widget _buildNewsCard(Article article) {
-    bool isBookmarked = false;
-
-    return StatefulBuilder(
-      builder: (context, setBookmarkState) {
-        return Card(
-          color: AppColors.iceBlue,
-          margin: const EdgeInsets.only(bottom: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+    return Card(
+      color: AppColors.paleCyan,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      elevation: 2,
+      child: InkWell(
+        onTap:
+            widget.onTap ??
+            () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => NewsDetailView(news: widget.news),
+                ),
+              );
+            },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
           child: ListTile(
-            contentPadding: const EdgeInsets.all(12),
-            leading: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child:
-                  (article.urlToImage?.isNotEmpty ?? false)
-                      ? Image.network(
-                        article.urlToImage!,
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                        errorBuilder:
-                            (context, error, stackTrace) =>
-                                const Icon(Icons.broken_image),
-                      )
-                      : Container(
-                        width: 50,
-                        height: 50,
-                        color: AppColors.silverMist,
-                        child: const Icon(Icons.image, color: Colors.white),
-                      ),
-            ),
+            leading:
+                widget.news.image.isNotEmpty
+                    ? Image.network(
+                      widget.news.image,
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                      errorBuilder:
+                          (_, __, ___) => const Icon(Icons.broken_image),
+                    )
+                    : const Icon(Icons.image, size: 48),
             title: Text(
-              article.title ?? 'No Title',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: AppColors.deepIce,
-              ),
+              widget.news.title,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            subtitle: Text(
-              article.description ?? 'No Description',
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: AppColors.glacierGray),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.news.content,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Author: ${widget.news.author}',
+                  style: const TextStyle(fontSize: 12, color: Colors.black),
+                ),
+              ],
             ),
             trailing: IconButton(
               icon: Icon(
-                isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                color: AppColors.deepIce,
+                isBookmarked ? CupertinoIcons.star_fill : CupertinoIcons.star,
+                color:
+                    isBookmarked ? AppColors.frozenTeal : AppColors.glacierGray,
               ),
-              onPressed: () {
-                setBookmarkState(() {
-                  isBookmarked = !isBookmarked;
-                });
-              },
+              onPressed: toggleBookmark,
+              tooltip: isBookmarked ? 'Hapus Bookmark' : 'Tambahkan Bookmark',
             ),
-            onTap: () {
-              // TODO: navigate to detail or show dialog
-            },
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "563840548008",
+    "project_id": "frostnews-ed366",
+    "storage_bucket": "frostnews-ed366.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:563840548008:android:32dae49a986b50bf40969d",
+        "android_client_info": {
+          "package_name": "com.example.tb_kelompok1_b"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBShwpQCSDm7A9CIicoSsSRMrnzDCTy79c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
